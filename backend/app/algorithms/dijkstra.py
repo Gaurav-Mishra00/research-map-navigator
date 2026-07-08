@@ -42,3 +42,5 @@ class Dijkstra:
                         priority_queue,
                         (new_distance, neighbour)
                     )
+
+        return distances, previous
