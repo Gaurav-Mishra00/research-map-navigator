@@ -11,6 +11,7 @@ import CommandSidebar from './components/CommandSidebar';
 
 import { EARTH_PLACES } from './services/earthPlacesData';
 import './styles/App.css';
+import { optimizeRoute } from './api/client';
 
 export default function App() {
   // ── Theme ──────────────────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ export default function App() {
 
   // ── Routing ────────────────────────────────────────────────────────────────
   const [directionsResult, setDirectionsResult] = useState(null);
+  const [optimizationResult, setOptimizationResult] = useState(null);
 
   // ── Measurement ───────────────────────────────────────────────────────────
   const [isMeasuring, setIsMeasuring] = useState(false);
@@ -181,6 +183,20 @@ export default function App() {
         }
       }
     );
+  }, []);
+
+  const handleOptimizeRoute = useCallback(async (origin, destination, travelMode) => {
+    try {
+      const result = await optimizeRoute(
+        [{ lng: origin.lng, lat: origin.lat }, { lng: destination.lng, lat: destination.lat }],
+        travelMode.toLowerCase() === 'bicycling' ? 'cycling' : travelMode.toLowerCase()
+      );
+      setOptimizationResult(result);
+      return result;
+    } catch {
+      setLocationError('Route optimization service is unavailable; Google Directions remains available.');
+      return null;
+    }
   }, []);
 
   // ── Google Places Search ───────────────────────────────────────────────
@@ -321,7 +337,9 @@ export default function App() {
           places={EARTH_PLACES}
           directionsResult={directionsResult}
           onCalculateDirections={handleCalculateDirections}
-          onClearRoute={() => setDirectionsResult(null)}
+          onOptimizeRoute={handleOptimizeRoute}
+          optimizationResult={optimizationResult}
+          onClearRoute={() => { setDirectionsResult(null); setOptimizationResult(null); }}
           destinationPlace={selectedPlace}
         />
 

@@ -18,6 +18,8 @@ export default function RouteNavigatorDrawer({
   places,
   directionsResult,
   onCalculateDirections,
+  onOptimizeRoute,
+  optimizationResult,
   onClearRoute,
   destinationPlace,
 }) {
@@ -25,6 +27,7 @@ export default function RouteNavigatorDrawer({
   const [targetId, setTargetId] = useState(destinationPlace?.id || places[0]?.id);
   const [travelMode, setTravelMode] = useState('DRIVING');
   const [isLoading, setIsLoading] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   // ── All hooks MUST be declared before any conditional return ──────────────
   useEffect(() => {
@@ -48,6 +51,15 @@ export default function RouteNavigatorDrawer({
     }
     setIsLoading(true);
     onCalculateDirections(origin, destination, travelMode);
+  };
+
+  const handleOptimize = async () => {
+    const origin = places.find(p => p.id === originId);
+    const destination = places.find(p => p.id === targetId);
+    if (!origin || !destination || origin.id === destination.id || !onOptimizeRoute) return;
+    setIsOptimizing(true);
+    await onOptimizeRoute(origin, destination, travelMode);
+    setIsOptimizing(false);
   };
 
   const handleExportGPX = () => {
@@ -136,6 +148,19 @@ export default function RouteNavigatorDrawer({
         >
           {isLoading ? '⏳ Calculating…' : '🗺️ Get Google Directions'}
         </button>
+        <button
+          className="btn btn-secondary full-width"
+          onClick={handleOptimize}
+          style={{ marginTop: 8 }}
+          disabled={isOptimizing || isLoading}
+        >
+          {isOptimizing ? '⏳ Optimizing stop order…' : '⚙ Optimize with Navigator API'}
+        </button>
+        {optimizationResult && (
+          <div className="optimizer-status" role="status">
+            <span className="status-dot" /> Optimized order: {optimizationResult.order.join(' → ')}
+          </div>
+        )}
 
         {/* Popular Preset Routes */}
         <div className="preset-routes-section" style={{ marginTop: 16 }}>

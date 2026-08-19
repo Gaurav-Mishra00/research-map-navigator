@@ -204,3 +204,37 @@ MIT — see [LICENSE](LICENSE) for details.
 <p align="center">
   Built with ❤️ using React + Google Maps JavaScript API
 </p>
+
+
+## Local services and release checks
+
+The frontend can run independently with Google Maps, while the optional Navigator route optimizer is provided by the FastAPI backend.
+
+### Frontend configuration
+
+Copy `frontend/.env.example` to `frontend/.env.local` and set a browser-restricted `VITE_GOOGLE_MAPS_API_KEY`. Do not commit `.env.local` or share the key in source control. `VITE_ROUTE_API_URL` defaults to `http://localhost:8000` and can be changed when the backend is deployed elsewhere.
+
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev -- --host
+```
+
+### Backend optimizer
+
+```bash
+cd backend
+python3 -m uvicorn app.main:app --reload --port 8000
+```
+
+The backend exposes `GET /health`, `POST /route`, and `POST /optimize-route`. The route drawer's **Optimize with Navigator API** action uses `/optimize-route`; Google Directions remains the map-rendering provider for turn-by-turn geometry.
+
+### Validation
+
+Run the release checks from the repository root:
+
+```bash
+python3 -m unittest discover -s backend/test -p 'test_*.py'
+cd frontend && npm run build && npm run lint
+```

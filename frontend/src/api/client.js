@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_ROUTE_API_URL || 'http://localhost:8000';
 
 // Simple in-memory cache with TTL
 const routeCache = new Map();
