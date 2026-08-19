@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import MapHeader from './components/MapHeader';
 import GoogleMapView from './components/GoogleMapView';
 import MapControls from './components/MapControls';
@@ -6,7 +6,8 @@ import PlaceInspectorDrawer from './components/PlaceInspectorDrawer';
 import RouteNavigatorDrawer from './components/RouteNavigatorDrawer';
 import BookmarksDrawer from './components/BookmarksDrawer';
 import DirectoryGridView from './components/DirectoryGridView';
-import LiveEarthView from './components/LiveEarthView';
+const LiveEarthView = lazy(() => import('./components/LiveEarthView'));
+import CommandSidebar from './components/CommandSidebar';
 
 import { EARTH_PLACES } from './services/earthPlacesData';
 import './styles/App.css';
@@ -22,10 +23,24 @@ export default function App() {
     localStorage.setItem('mapTheme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setIsCommandOpen(true);
+      }
+      if (event.key === 'Escape') setIsCommandOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   // ── Search & View ──────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('map');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
 
   // ── Map State ──────────────────────────────────────────────────────────────
   const [mapTypeId, setMapTypeId] = useState('roadmap');
@@ -39,7 +54,18 @@ export default function App() {
   // ── Places & Pins ─────────────────────────────────────────────────────────
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [customPin, setCustomPin] = useState(null);
-  const [bookmarkedPlaces, setBookmarkedPlaces] = useState([EARTH_PLACES[0], EARTH_PLACES[1]]);
+  const [bookmarkedPlaces, setBookmarkedPlaces] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('researchmap-bookmarks') || 'null');
+      return Array.isArray(saved) && saved.length ? saved : [EARTH_PLACES[0], EARTH_PLACES[1]];
+    } catch {
+      return [EARTH_PLACES[0], EARTH_PLACES[1]];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('researchmap-bookmarks', JSON.stringify(bookmarkedPlaces));
+  }, [bookmarkedPlaces]);
 
   // ── User Location ─────────────────────────────────────────────────────────
   const [userLocation, setUserLocation] = useState(null);
@@ -151,7 +177,7 @@ export default function App() {
             mapRef.current.fitBounds(bounds, { padding: 80 });
           }
         } else {
-          alert(`Could not calculate route: ${status}`);
+          setLocationError(`Route unavailable: ${status}`);
         }
       }
     );
@@ -159,19 +185,42 @@ export default function App() {
 
   // ── Google Places Search ───────────────────────────────────────────────
   const handleGoogleSearch = useCallback((query) => {
-    if (!query.trim() || !mapRef.current || !window.google) return;
+    if (!query.trim()) return;
+    if (!mapRef.current || !window.google) {
+      setLocationError('Map services are still loading. Try again in a moment.');
+      return;
+    }
     const service = new window.google.maps.places.PlacesService(mapRef.current);
     service.textSearch({ query }, (results, status) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK && results[0]) {
         const loc = results[0].geometry.location;
         mapRef.current.panTo(loc);
         mapRef.current.setZoom(14);
+        setLocationError(null);
+      } else {
+        setLocationError(`No location found for “${query}”.`);
       }
     });
   }, []);
 
   return (
     <div className={`app-shell ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
+      <CommandSidebar
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        onOpenRoutePlanner={() => setIsRoutePlannerOpen(true)}
+        onOpenBookmarks={() => setIsBookmarksOpen(true)}
+        onOpenLiveEarth={() => setShowLiveEarth(true)}
+        isMeasuring={isMeasuring}
+        setIsMeasuring={setIsMeasuring}
+        bookmarkCount={bookmarkedPlaces.length}
+        isLocating={isLocating}
+        onMyLocation={handleMyLocation}
+        isDarkMode={isDarkMode}
+        onToggleTheme={() => setIsDarkMode(d => !d)}
+        collapsed={isSidebarCollapsed}
+        onToggleCollapsed={() => setIsSidebarCollapsed(value => !value)}
+      />
       <MapHeader
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -186,9 +235,29 @@ export default function App() {
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode(d => !d)}
         onOpenLiveEarth={() => setShowLiveEarth(true)}
+        onOpenCommand={() => setIsCommandOpen(true)}
       />
 
       <main className="main-viewport">
+        <div className="workspace-telemetry" aria-label="Workspace status">
+          <span className="telemetry-kicker">LIVE WORKSPACE</span>
+          <span className="telemetry-divider" />
+          <span>{viewMode === 'map' ? 'Map canvas' : 'Place directory'}</span>
+          <span className="telemetry-divider" />
+          <span className="telemetry-coordinate">{userLocation ? `${userLocation.lat.toFixed(3)}, ${userLocation.lng.toFixed(3)}` : '20.000, 0.000'}</span>
+          <span className="telemetry-live"><span className="status-dot" /> ONLINE</span>
+        </div>
+        {(directionsResult || isMeasuring) && (
+          <section className="analysis-dock" aria-label="Active analysis">
+            {directionsResult && <>
+              <div><small>ACTIVE ROUTE</small><strong>{directionsResult.routes?.[0]?.legs?.[0]?.start_address?.split(',')[0] || 'Origin'} → {directionsResult.routes?.[0]?.legs?.[0]?.end_address?.split(',')[0] || 'Destination'}</strong></div>
+              <div><small>DISTANCE</small><strong>{directionsResult.routes?.[0]?.legs?.[0]?.distance?.text || '—'}</strong></div>
+              <div><small>EST. TIME</small><strong>{directionsResult.routes?.[0]?.legs?.[0]?.duration?.text || '—'}</strong></div>
+              <div><small>STEPS</small><strong>{directionsResult.routes?.[0]?.legs?.[0]?.steps?.length || 0}</strong></div>
+            </>}
+            {isMeasuring && <div className="measure-status"><small>MEASUREMENT MODE</small><strong>{measurePoints.length} point{measurePoints.length === 1 ? '' : 's'} selected · click map to continue</strong></div>}
+          </section>
+        )}
         {viewMode === 'map' && (
           <div className="earth-map-container">
             <GoogleMapView
@@ -266,33 +335,48 @@ export default function App() {
 
         {/* Location error toast */}
         {locationError && (
-          <div className="location-toast" onClick={() => setLocationError(null)}>
+          <div className="location-toast" role="alert" tabIndex="0" onClick={() => setLocationError(null)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setLocationError(null); }}>
             📍 {locationError}
           </div>
         )}
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="mobile-bottom-nav">
-        <button className={`mob-nav-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>
+      <nav className="mobile-bottom-nav" aria-label="Mobile workspace navigation">
+        <button aria-label="Open map view" className={`mob-nav-btn ${viewMode === 'map' ? 'active' : ''}`} onClick={() => setViewMode('map')}>
           <span>🗺️</span><span>Map</span>
         </button>
-        <button className="mob-nav-btn" onClick={() => setIsRoutePlannerOpen(true)}>
+        <button aria-label="Open directions" className="mob-nav-btn" onClick={() => setIsRoutePlannerOpen(true)}>
           <span>🧭</span><span>Directions</span>
         </button>
-        <button className="mob-nav-btn earth-globe-btn" onClick={() => setShowLiveEarth(true)}>
+        <button aria-label="Open live Earth globe" className="mob-nav-btn earth-globe-btn" onClick={() => setShowLiveEarth(true)}>
           <span>🌍</span><span>Live Earth</span>
         </button>
-        <button className={`mob-nav-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>
+        <button aria-label="Open place explorer" className={`mob-nav-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>
           <span>📋</span><span>Explore</span>
         </button>
-        <button className="mob-nav-btn" onClick={() => setIsBookmarksOpen(true)}>
+        <button aria-label="Open saved places" className="mob-nav-btn" onClick={() => setIsBookmarksOpen(true)}>
           <span>🔖</span><span>Saved</span>
         </button>
       </nav>
 
+      {isCommandOpen && (
+        <div className="command-overlay" role="dialog" aria-modal="true" aria-label="Search ResearchMap" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsCommandOpen(false); }}>
+          <div className="command-dialog">
+            <div className="command-search-row"><span className="command-search-icon">⌕</span><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { handleGoogleSearch(searchQuery); setIsCommandOpen(false); } }} placeholder="Search places, coordinates, landmarks…" aria-label="Search places, coordinates, landmarks" /><kbd>ESC</kbd></div>
+            <div className="command-results">
+              <p className="command-label">Quick actions</p>
+              <button onClick={() => { setIsCommandOpen(false); setIsRoutePlannerOpen(true); }}>↗ <span>Plan a route</span><small>Navigate between places</small></button>
+              <button onClick={() => { setIsCommandOpen(false); setViewMode('grid'); }}>◈ <span>Explore places</span><small>Browse the landmark directory</small></button>
+              <button onClick={() => { setIsCommandOpen(false); setShowLiveEarth(true); }}>◎ <span>Open global view</span><small>Switch to the immersive globe</small></button>
+              {searchQuery && filteredPlaces.slice(0, 4).map(place => <button key={place.id} onClick={() => { handleSelectPlace(place); setIsCommandOpen(false); }}><span className="result-index">{place.category?.slice(0, 1).toUpperCase()}</span><span>{place.name}</span><small>{place.city}, {place.country}</small></button>)}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Live Earth Globe Overlay */}
-      {showLiveEarth && <LiveEarthView onClose={() => setShowLiveEarth(false)} isDarkMode={isDarkMode} />}
+      {showLiveEarth && <Suspense fallback={<div className="globe-loading" role="status">Initializing global view…</div>}><LiveEarthView onClose={() => setShowLiveEarth(false)} isDarkMode={isDarkMode} /></Suspense>}
     </div>
   );
 }

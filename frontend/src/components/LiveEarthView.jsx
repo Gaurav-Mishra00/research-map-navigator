@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 // ── NASA Texture URLs (Locally Bundled) ───────────────────────────────────
-const TEX_DAY   = '/textures/earth_day.jpg';
+const TEX_DAY   = '/textures/earth_day_5k.jpg';
 const TEX_NIGHT = '/textures/earth_night.png';
 const TEX_CLOUDS = '/textures/earth_clouds.png';
 
@@ -14,6 +14,21 @@ const VERT = `
     vUv = uv;
     vNormal = normalize(normalMatrix * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const ATMOS_VERT = `
+  varying vec3 vNormal;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const ATMOS_FRAG = `
+  varying vec3 vNormal;
+  void main() {
+    float fresnel = pow(1.0 - max(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)), 0.0), 3.2);
+    vec3 atmosphere = mix(vec3(0.08, 0.34, 0.95), vec3(0.20, 0.78, 1.0), fresnel);
+    gl_FragColor = vec4(atmosphere, fresnel * 0.58);
   }
 `;
 const FRAG = `
@@ -104,9 +119,12 @@ export default function LiveEarthView({ onClose }) {
     const H = el.clientHeight;
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(W, H);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio * 1.25, 3));
+    renderer.setSize(W, H, false);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
     renderer.setClearColor(0x000004);
     el.appendChild(renderer.domElement);
     rendererRef.current = renderer;
@@ -149,6 +167,10 @@ export default function LiveEarthView({ onClose }) {
     const dayTex   = loader.load(TEX_DAY, checkLoaded);
     const nightTex = loader.load(TEX_NIGHT, checkLoaded);
     dayTex.colorSpace = THREE.SRGBColorSpace;
+    nightTex.colorSpace = THREE.SRGBColorSpace;
+    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+    dayTex.anisotropy = maxAnisotropy;
+    nightTex.anisotropy = maxAnisotropy;
 
     const sunDir = getSunDirection(new Date());
     const earthMat = new THREE.ShaderMaterial({
@@ -162,15 +184,17 @@ export default function LiveEarthView({ onClose }) {
     });
     matRef.current = earthMat;
 
-    const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 80, 80), earthMat);
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 160, 160), earthMat);
     earth.rotation.y = -Math.PI / 2;
     scene.add(earth);
     earthRef.current = earth;
 
     // ── Cloud Layer ─────────────────────────────────────────────────────────
     const cloudTex = loader.load(TEX_CLOUDS, checkLoaded);
+    cloudTex.colorSpace = THREE.SRGBColorSpace;
+    cloudTex.anisotropy = maxAnisotropy;
     const clouds = new THREE.Mesh(
-      new THREE.SphereGeometry(1.018, 64, 64),
+      new THREE.SphereGeometry(1.018, 128, 128),
       new THREE.MeshLambertMaterial({
         map: cloudTex, transparent: true, opacity: 0.48,
         blending: THREE.AdditiveBlending, depthWrite: false,
@@ -180,17 +204,22 @@ export default function LiveEarthView({ onClose }) {
     cloudRef.current = clouds;
 
     // ── Atmosphere Layers ───────────────────────────────────────────────────
-    scene.add(new THREE.Mesh(
-      new THREE.SphereGeometry(1.06, 64, 64),
-      new THREE.MeshLambertMaterial({
-        color: new THREE.Color(0.15, 0.4, 1.0), transparent: true, opacity: 0.1,
-        side: THREE.FrontSide, blending: THREE.AdditiveBlending, depthWrite: false,
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1.07, 128, 128),
+      new THREE.ShaderMaterial({
+        vertexShader: ATMOS_VERT,
+        fragmentShader: ATMOS_FRAG,
+        transparent: true,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
       })
-    ));
+    );
+    scene.add(atmosphere);
     scene.add(new THREE.Mesh(
-      new THREE.SphereGeometry(1.12, 64, 64),
-      new THREE.MeshLambertMaterial({
-        color: new THREE.Color(0.08, 0.28, 0.85), transparent: true, opacity: 0.065,
+      new THREE.SphereGeometry(1.12, 96, 96),
+      new THREE.MeshBasicMaterial({
+        color: 0x1a5cff, transparent: true, opacity: 0.075,
         side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false,
       })
     ));
@@ -270,6 +299,18 @@ export default function LiveEarthView({ onClose }) {
       window.removeEventListener('touchmove', onMove);
       el.removeEventListener('wheel', onWheel);
       window.removeEventListener('resize', onResize);
+      scene.traverse((object) => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          materials.forEach((material) => {
+            Object.values(material).forEach((value) => {
+              if (value?.isTexture) value.dispose();
+            });
+            material.dispose();
+          });
+        }
+      });
       renderer.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
@@ -282,13 +323,14 @@ export default function LiveEarthView({ onClose }) {
         <div className="earth-hud-brand">
           <span className="earth-hud-icon">🛸</span>
           <div>
-            <div className="earth-hud-title">Live Earth — NASA View</div>
-            <div className="earth-hud-sub">Real-time day/night terminator · Drag to rotate · Scroll to zoom</div>
+                      <div className="earth-hud-title">Live Earth — NASA View <span className="quality-badge">4K / 3D</span></div>
+          <div className="earth-hud-sub">High-resolution Blue Marble · Real-time day/night terminator · Drag to rotate · Scroll to zoom</div>
+
           </div>
         </div>
         <div className="earth-hud-clock">
           <div className="earth-clock-label">UTC</div>
-          <div className="earth-clock-time">{utcTime.toUTCString().split(' ').slice(1, 5).join(' ')}</div>
+          <div className="earth-clock-time">{fmtUTC(utcTime).replace(' UTC', '').split(' ').slice(1, 5).join(' ')}</div>
         </div>
         <button className="earth-close-btn" onClick={onClose}>✕</button>
       </div>
@@ -325,7 +367,7 @@ export default function LiveEarthView({ onClose }) {
           </div>
 
           <div className="earth-info-chip">
-            🌍 Blue Marble · DSCOVR/EPIC Satellite
+            🌍 Blue Marble 5K · NASA Earth Observatory · DSCOVR/EPIC Satellite
           </div>
         </div>
       </div>

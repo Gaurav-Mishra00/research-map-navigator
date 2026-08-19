@@ -72,7 +72,6 @@ export default function EarthMapView({
   mapZoom,
   activeRoute,
   measurePoints,
-  isMeasuring,
   onMapClick,
   customDroppedPin,
   onDropPin

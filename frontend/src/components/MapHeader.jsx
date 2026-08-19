@@ -15,6 +15,7 @@ export default function MapHeader({
   isDarkMode,
   onToggleTheme,
   onOpenLiveEarth,
+  onOpenCommand,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -50,6 +51,7 @@ export default function MapHeader({
             type="text"
             className="search-input"
             placeholder="Search anywhere on Earth — Tokyo, Grand Canyon, Eiffel Tower…"
+            aria-label="Search anywhere on Earth"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -57,8 +59,13 @@ export default function MapHeader({
           {searchQuery && (
             <button className="clear-btn" onClick={() => setSearchQuery('')}>✕</button>
           )}
+          {onOpenCommand && (
+            <button className="search-shortcut" onClick={onOpenCommand} title="Open command search (Ctrl or Cmd + K)">
+              <kbd>⌘K</kbd>
+            </button>
+          )}
           {onGoogleSearch && (
-            <button className="search-go-btn" onClick={() => onGoogleSearch(searchQuery)} title="Search on Google Maps">
+            <button className="search-go-btn" onClick={() => onGoogleSearch(searchQuery)} title="Search on Google Maps" aria-label="Search on Google Maps">
               🔍
             </button>
           )}

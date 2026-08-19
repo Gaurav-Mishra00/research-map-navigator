@@ -25,7 +25,6 @@ export default function MapControls({
   onClearMeasurement,
   onMyLocation,
   isLocating,
-  locationError,
 }) {
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const activeType = MAP_TYPES.find(t => t.id === mapTypeId) || MAP_TYPES[0];

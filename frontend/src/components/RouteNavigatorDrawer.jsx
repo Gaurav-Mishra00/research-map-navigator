@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PRESET_ROUTES } from '../services/earthPlacesData';
 
 const TRAVEL_MODES = [
