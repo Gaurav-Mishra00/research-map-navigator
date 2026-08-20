@@ -1,86 +1,81 @@
-# 🌍 Earth Map Navigator
+# 🌍 ResearchMap Navigator
 
-> A **full-featured interactive map navigator** powered by the **Google Maps JavaScript API** — built with React + Vite. Search anywhere on Earth, get real turn-by-turn directions, toggle live traffic & transit layers, explore landmarks with photo galleries, and export routes as `.gpx` files.
+> A **full-featured geospatial command center and interactive map navigator** powered by the **Google Maps JavaScript API**, **3D WebGL Live Earth Globe**, and **FastAPI Route Optimization Service**. Search anywhere on Earth, get real turn-by-turn directions, optimize multi-stop itineraries, toggle live traffic & transit layers, explore global landmarks with rich photo galleries, and export routes as `.gpx` files.
 
 <p align="center">
-  <img src="assets/screenshots/01_map_home.png" alt="Earth Map Navigator — Home View" width="100%" />
+  <img src="assets/screenshots/01_map_home.png" alt="ResearchMap Navigator — Home View" width="100%" />
 </p>
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### 🗺️ Real Google Maps Integration
-- **4 map types**: Dark Road, Satellite, Hybrid, Terrain — powered by Google Maps tiles
-- **45° 3D Tilt** mode — native Google Maps perspective tilt
-- **Dark custom styling** for the roadmap view
-- **Smooth pan & zoom** via Google Maps controls
+### 🗺️ Google Maps Integration & Cyber Theme
+- **4 Map Types**: Dark Road, Satellite, Hybrid, and Terrain — powered by Google Maps tiles.
+- **45° 3D Tilt Mode**: Native Google Maps perspective tilt.
+- **Dark Custom Styling**: High-contrast, glassmorphic UI system.
+- **Smooth Pan, Zoom & Camera Reset**: Complete spatial navigation controls.
 
-### 🚦 Live Overlay Layers
+### 🚦 Live Overlays & Traffic Intelligence
 | Layer | Description |
 |---|---|
-| 🚦 **Traffic** | Real-time Google traffic congestion (green / orange / red roads) |
-| 🚇 **Transit** | Google transit network — bus routes, metro lines, rail |
+| 🚦 **Traffic Layer** | Real-time traffic flow & congestion overlays (green / orange / red roads) |
+| 🚇 **Transit Network** | Google transit map layers — subways, commuter rail, and bus routes |
 
 <p align="center">
-  <img src="assets/screenshots/02_traffic_layer.png" alt="Live Traffic Layer" width="48%" />
-  <img src="assets/screenshots/03_transit_layer.png" alt="Transit Layer" width="48%" />
+  <img src="assets/screenshots/02_traffic_layer.png" alt="Live Traffic Layer" width="49%" />
+  <img src="assets/screenshots/03_transit_layer.png" alt="Transit Layer" width="49%" />
 </p>
 
-### 🛰️ Satellite & 3D View
-Switch between satellite imagery and 3D tilt perspective:
+---
+
+### 🛰️ Satellite & 3D Perspective Tilt
+Switch seamlessly between high-resolution satellite imagery and 45° 3D tilt perspective:
 
 <p align="center">
-  <img src="assets/screenshots/04_satellite_view.png" alt="Satellite View" width="48%" />
-  <img src="assets/screenshots/08_3d_tilt.png" alt="3D Tilt Mode" width="48%" />
+  <img src="assets/screenshots/04_satellite_view.png" alt="Satellite View" width="49%" />
+  <img src="assets/screenshots/08_3d_tilt.png" alt="3D Tilt Mode" width="49%" />
 </p>
 
-### 🧭 Real Turn-by-Turn Directions
-Powered by the **Google Directions API** — get actual road-network routing:
-- **4 travel modes**: Driving 🚗, Transit 🚆, Walking 🚶, Cycling 🚴
-- **Real distance & duration** (e.g. London → Paris: 463 km · 5 hrs 48 mins)
-- **Step-by-step instructions** with per-step distance and time
-- **GPX export** — download your route as a `.gpx` file for GPS devices
+---
+
+### 🧭 Route Planning, Navigation & Backend Optimizer
+Powered by **Google Directions API** and the **FastAPI Navigator Route Optimizer**:
+- **4 Travel Profiles**: Driving 🚗, Transit 🚆, Walking 🚶, Cycling 🚴
+- **Real Distance & Duration Metrics**: Accurate road geometry and time calculations.
+- **Turn-by-Turn Step Guidance**: Detailed step breakdown with distance markers.
+- **Navigator Route Optimizer API**: Multi-waypoint sequence optimization via backend heuristics.
+- **GPX Export**: Download route tracks as `.gpx` files ready for GPS devices and smartwatches.
 
 <p align="center">
-  <img src="assets/screenshots/05_directions_drawer.png" alt="Directions Drawer" width="48%" />
-  <img src="assets/screenshots/06_route_result.png" alt="Real Route Result" width="48%" />
+  <img src="assets/screenshots/05_directions_drawer.png" alt="Directions Drawer" width="49%" />
+  <img src="assets/screenshots/06_route_result.png" alt="Calculated Route Result" width="49%" />
 </p>
 
-### 📍 Place Explorer & Inspector
-- **14 iconic global landmarks** pre-loaded: Eiffel Tower, Taj Mahal, Machu Picchu, Burj Khalifa, Mt. Everest, and more
-- **Category filters**: Landmarks, Tech Hubs, Nature, Airports
-- **Place Inspector drawer** with photo gallery carousel, elevation, local timezone, weather, and nearby POIs
-- **Bookmark** your favourite places for quick access
-- **Custom pin dropper** — right-click anywhere on Earth to drop a pin and get GPS coordinates
+---
+
+### 📍 Place Inspector & Curated Explore Grid
+- **Global Landmarks & POIs**: Pre-loaded landmarks across Wonders, Tech Hubs, Nature, and Airports.
+- **Place Inspector Drawer**: High-definition photo carousel, elevation, timezone, live weather, and nearby points of interest.
+- **Explore Grid View**: Card grid catalog of iconic destinations worldwide.
+- **Bookmarks Library**: Save and manage favourite destinations locally.
+- **Custom Coordinate Pin Dropper**: Right-click anywhere on the map to pin exact GPS coordinates.
 
 <p align="center">
-  <img src="assets/screenshots/07_place_inspector.png" alt="Place Inspector Drawer" width="60%" />
+  <img src="assets/screenshots/07_place_inspector.png" alt="Place Inspector Drawer" width="49%" />
+  <img src="assets/screenshots/10_explore_grid.png" alt="Explore Places Grid" width="49%" />
 </p>
 
-### 🔍 Google Places Search
-Type any location on Earth in the search bar and press **Enter** or click 🔍 — powered by **Google Places textSearch API** to fly the map to any address, city, or landmark globally.
+---
 
-### 📐 Distance Measurement Tool
-Click **📏 Measure** in the controls panel, then click two or more points on the map to draw a geodesic measurement line.
-
-### 🌍 Live Earth Globe (3D WebGL)
-View the Earth rotating in real-time space with high fidelity textures:
-- **WebGL Rendering**: Renders a 3D Earth sphere with custom shaders for the day/night terminator.
-- **NASA Textures**: Uses Earth day mapping, night city lights, and transparent cloud layers.
-- **HUD & Stats**: Displays live UTC clock, rotation speed control, and NASA EPIC (DSCOVR) latest photo feeds.
+### 🌍 3D WebGL Live Earth Globe
+- **Interactive 3D Globe**: Built with Three.js WebGL and custom day/night shaders.
+- **NASA Textures & Atmosphere**: High-resolution 5K Earth day maps, nighttime city lights, and animated cloud layers.
+- **HUD & Telemetry**: Live UTC clock, rotation speed control, and NASA EPIC DSCOVR photo integration.
 
 <p align="center">
-  <img src="assets/screenshots/09_live_earth_globe.png" alt="Live Earth Globe View" width="75%" />
+  <img src="assets/screenshots/09_live_earth_globe.png" alt="Live Earth Globe View" width="85%" />
 </p>
-
-### 📍 Live Location (GPS Tracking)
-- Real-time geolocation support that drops a blue pulsing dot indicating your exact location.
-- Fly and auto-focus features that align the camera view directly above you.
-
-### 🌓 Theme Switcher (Light & Dark Modes)
-- Seamless swap between a cyber dark tech UI and a clean daylight mode.
-- High-contrast visual options with matching maps configurations and font alignment.
 
 ---
 
@@ -88,153 +83,160 @@ View the Earth rotating in real-time space with high fidelity textures:
 
 | Layer | Technology |
 |---|---|
-| **Frontend framework** | React 18 + Vite 8 |
-| **Maps** | Google Maps JavaScript API (`@react-google-maps/api`) |
-| **Routing** | Google Directions API |
-| **Search** | Google Places API (textSearch) |
-| **Styling** | Vanilla CSS (glassmorphic dark design system) |
-| **Icons & fonts** | Google Fonts — Inter, Outfit, JetBrains Mono |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- **Node.js** ≥ 18
-- A **Google Maps API Key** with these APIs enabled:
-  - Maps JavaScript API
-  - Places API
-  - Directions API
-  - Geocoding API
-
-### 1. Clone the repo
-```bash
-git clone https://github.com/Gaurav-Mishra00/research-map-navigator.git
-cd research-map-navigator/frontend
-```
-
-### 2. Install dependencies
-```bash
-npm install
-```
-
-### 3. Set your Google Maps API Key
-Create a `.env` file in the `frontend/` directory:
-```env
-VITE_GOOGLE_MAPS_API_KEY=YOUR_API_KEY_HERE
-```
-
-> 💡 Get a free key at [console.cloud.google.com](https://console.cloud.google.com). Google gives **$200/month free credit** (~28,000 map loads free per month).
-
-### 4. Run the dev server
-```bash
-npm run dev
-```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### 5. Build for production
-```bash
-npm run build
-```
+| **Frontend Framework** | React 19 + Vite 8 |
+| **3D Rendering** | Three.js WebGL (Custom Shaders) |
+| **Maps & Places** | `@react-google-maps/api` (Maps, Places, Directions, Geometry) |
+| **HTTP Client** | Axios (with caching & debounce) |
+| **Design System** | Glassmorphic Dark/Light CSS Tokens (`Inter`, `Outfit`, `JetBrains Mono`) |
+| **Backend Service** | Python 3.13 + FastAPI + Uvicorn |
+| **Testing** | Pytest (Backend API & Algorithms) + Vite Build Validation |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── GoogleMapView.jsx        # Core Google Maps canvas
-│   │   ├── MapHeader.jsx            # Search bar + category filters
-│   │   ├── MapControls.jsx          # Zoom, tilt, layers, overlays
-│   │   ├── PlaceInspectorDrawer.jsx # Place details, photos, POIs
-│   │   ├── RouteNavigatorDrawer.jsx # Directions + real routing
-│   │   ├── BookmarksDrawer.jsx      # Saved places
-│   │   └── DirectoryGridView.jsx   # Card grid of all places
-│   ├── services/
-│   │   ├── earthPlacesData.js       # 14 global landmark datasets
-│   │   └── mapStyles.js             # Map tile style configs
-│   ├── styles/
-│   │   ├── index.css                # Design system tokens + global
-│   │   └── App.css                  # Component-level styles
-│   ├── App.jsx                      # Root state + Google Maps setup
-│   └── main.jsx                     # React entry point
-├── .env                             # VITE_GOOGLE_MAPS_API_KEY (gitignored)
-├── index.html
-└── package.json
+ResearchMap-Navigator/
+├── backend/
+│   ├── app/
+│   │   ├── algorithms/          # Route optimization algorithms & heuristics
+│   │   ├── services/            # Routing service integrations
+│   │   └── main.py              # FastAPI app routes (/health, /route, /optimize-route)
+│   ├── test/
+│   │   ├── test_algorithms.py   # Unit tests for routing optimizer
+│   │   ├── test_api.py          # FastAPI endpoint integration tests
+│   │   ├── test_dijkstra.py     # Graph algorithm tests
+│   │   └── test_graph.py        # Graph data structure tests
+│   └── requirements.txt         # FastAPI, Uvicorn, Pydantic, HTTPX
+├── frontend/
+│   ├── public/
+│   │   └── textures/            # NASA Earth Day/Night 5K textures
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── client.js        # Axios API client with route caching & debounce
+│   │   ├── components/
+│   │   │   ├── CommandSidebar.jsx       # Command navigation sidebar
+│   │   │   ├── GoogleMapView.jsx        # Google Maps canvas & tile renderer
+│   │   │   ├── LiveEarthView.jsx        # 3D WebGL Earth globe
+│   │   │   ├── MapHeader.jsx            # Search bar, category filters & actions
+│   │   │   ├── MapControls.jsx          # Floating zoom, layers, 3D tilt, measure
+│   │   │   ├── PlaceInspectorDrawer.jsx # Landmark details, photo carousel, weather
+│   │   │   ├── RouteNavigatorDrawer.jsx # Turn-by-turn directions & route optimizer
+│   │   │   ├── BookmarksDrawer.jsx      # Saved destinations drawer
+│   │   │   ├── DirectoryGridView.jsx   # Explore places grid view
+│   │   │   └── ErrorBoundary.jsx        # React component error boundary
+│   │   ├── services/
+│   │   │   ├── earthPlacesData.js       # Global landmarks & place datasets
+│   │   │   └── mapStyles.js             # Google Maps dark tile styles
+│   │   ├── styles/
+│   │   │   ├── index.css                # Design system tokens & global styling
+│   │   │   └── App.css                  # Glassmorphic component styles
+│   │   ├── App.jsx                      # App root state & Google Maps loader
+│   │   └── main.jsx                     # React entry point
+│   ├── .env                             # Frontend environment config (API Key)
+│   ├── .env.example                     # Environment template
+│   └── package.json
+└── assets/
+    └── screenshots/                     # Documentation preview images
 ```
 
 ---
 
-## 🗺️ How to Use
+## 🚀 Quick Start Guide
 
-| Action | How |
-|---|---|
-| **Search any place on Earth** | Type in search bar → press `Enter` or click 🔍 |
-| **Get directions** | Click `🧭 Directions` → choose origin & destination → click `Get Google Directions` |
-| **Switch map type** | Click the layers button → choose Satellite / Hybrid / Terrain |
-| **Toggle traffic** | Click `🚦 Traffic` in controls |
-| **Toggle transit** | Click `🚇 Transit` in controls |
-| **Enable 3D tilt** | Click `📐` in controls |
-| **Drop a custom pin** | **Right-click** anywhere on the map |
-| **Inspect a landmark** | Click any glowing marker on the map |
-| **Bookmark a place** | Open Place Inspector → click bookmark icon |
-| **Export route as GPX** | After calculating directions → click `💾 GPX` |
-| **Measure distance** | Click `📏 Measure` → click points on the map |
+### Prerequisites
+- **Node.js** ≥ 18
+- **Python** ≥ 3.10
+- **Google Maps API Key** with the following APIs enabled:
+  - Maps JavaScript API
+  - Places API
+  - Directions API
+  - Geocoding API
 
 ---
 
-## 🔑 API Key Security
+### 1. Backend Setup (FastAPI Route Optimizer)
 
-> ⚠️ **Never commit your `.env` file.** The `.gitignore` already excludes it.
+```bash
+# Navigate to backend
+cd backend
 
-For production deployments, restrict your key in [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
-- **HTTP referrers**: Add your production domain
-- **API restrictions**: Limit to Maps JavaScript API, Places API, Directions API only
+# Install dependencies
+pip install -r requirements.txt
+
+# Start backend server
+python -m uvicorn app.main:app --reload --port 8000
+```
+> The API will be live at `http://localhost:8000` (API Docs: `http://localhost:8000/docs`).
+
+---
+
+### 2. Frontend Setup (React + Vite)
+
+```bash
+# Navigate to frontend
+cd frontend
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+```
+
+Edit `frontend/.env` and add your Google Maps API Key:
+```env
+VITE_GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
+VITE_ROUTE_API_URL=http://localhost:8000
+```
+
+Start the frontend development server:
+```bash
+npm run dev
+```
+> Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+
+---
+
+## 🧪 Testing & Validation
+
+Run the test suite and validation checks:
+
+```powershell
+# Run Backend Test Suite (Pytest)
+python -m pytest backend/test
+
+# Run Frontend Production Build & Bundle Check
+cd frontend
+npm run build
+```
+
+---
+
+## 🗺️ Keyboard & Action Guide
+
+| Action | Shortcut / Method |
+|---|---|
+| **Search Location** | Focus search bar & press `Enter` or click 🔍 |
+| **Command Search** | Press `⌘K` or `Ctrl + K` |
+| **Plan Route** | Click `🧭 Directions` in the header or sidebar |
+| **Switch Map Type** | Click layers button &rarr; choose *Satellite*, *Hybrid*, *Terrain*, or *Dark Road* |
+| **Live Traffic** | Click `🚦 Traffic` in floating controls |
+| **Transit Network** | Click `🚇 Transit` in floating controls |
+| **45° 3D Tilt** | Click `📐` in floating controls |
+| **Drop GPS Pin** | **Right-click** anywhere on the map |
+| **Measure Distance** | Click `📏 Measure` &rarr; click 2+ points on the map |
+| **3D Live Earth** | Click `🌍 Live Earth` in the header |
+| **Export Route** | After computing a route, click `💾 GPX` |
+
+---
+
+## 🔑 API Security Notice
+Never commit `.env` or expose private API keys in version control. Configure **HTTP Referrer Restrictions** in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials) for production deployments (`https://yourdomain.com/*`). For local development, authorize:
+- `http://localhost:5173/*`
+- `http://127.0.0.1:5173/*`
 
 ---
 
 ## 📄 License
-
-MIT — see [LICENSE](LICENSE) for details.
-
----
-
-<p align="center">
-  Built with ❤️ using React + Google Maps JavaScript API
-</p>
-
-
-## Local services and release checks
-
-The frontend can run independently with Google Maps, while the optional Navigator route optimizer is provided by the FastAPI backend.
-
-### Frontend configuration
-
-Copy `frontend/.env.example` to `frontend/.env.local` and set a browser-restricted `VITE_GOOGLE_MAPS_API_KEY`. Do not commit `.env.local` or share the key in source control. `VITE_ROUTE_API_URL` defaults to `http://localhost:8000` and can be changed when the backend is deployed elsewhere.
-
-```bash
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev -- --host
-```
-
-### Backend optimizer
-
-```bash
-cd backend
-python3 -m uvicorn app.main:app --reload --port 8000
-```
-
-The backend exposes `GET /health`, `POST /route`, and `POST /optimize-route`. The route drawer's **Optimize with Navigator API** action uses `/optimize-route`; Google Directions remains the map-rendering provider for turn-by-turn geometry.
-
-### Validation
-
-Run the release checks from the repository root:
-
-```bash
-python3 -m unittest discover -s backend/test -p 'test_*.py'
-cd frontend && npm run build && npm run lint
-```
+MIT © Gaurav Mishra
